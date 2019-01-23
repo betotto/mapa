@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.municipalities {
+  fill: #222;
+}
+
+.municipalities :hover {
+  fill: orange;
+}
+
+.state-boundary {
+  fill: black;
+  stroke: #fff;
+  pointer-events: none;
+}
+
+.municipality-boundary {
+  fill: none;
+  stroke: #fff;
+  stroke-opacity: .25;
+  stroke-width: .5px;
+  pointer-events: none;
+}
+
+</style>
+<body>
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var width = 960*4,
+    height = 628*4;
+
+var projection = d3.geo.conicConformal()
+    .rotate([102, 0])
+    .center([0, 24])
+    .parallels([17.5, 29.5])
+    .scale(1850*4)
+    .translate([width / 2, height / 2]);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+d3.json("/mexico.json", function(error, mx) {
+  if (error) throw error;
+
+/*
+  svg.append("g")
+      .attr("class", "municipalities")
+    .selectAll("path")
+      .data(topojson.feature(mx, mx.objects.municipalities).features)
+    .enter().append("path")
+      .attr("d", path)
+    .append("title")
+      .text(function(d) { return d.properties.name; });*/
+
+  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+  .forEach(i => svg.append("g")
+      .attr("class", "state-boundary")
+      .attr("id", i)
+    .append("path")
+      .datum(topojson.merge(mx, mx.objects.municipalities.geometries.filter(a => a.properties.state === i)))
+      .attr("d", path));
+
+  
+/*
+      svg.append("path")
+      .datum(topojson.mesh(mx, mx.objects.municipalities, function(a, b) { return a.properties.state !== b.properties.state; }))
+      .attr("class", "state-boundary")
+      .attr("d", path);
+
+  svg.append("path")
+      .datum(topojson.mesh(mx, mx.objects.municipalities, function(a, b) { return a.properties.state === b.properties.state && a !== b; }))
+      .attr("class", "municipality-boundary")
+      .attr("d", path);*/
+});
+
+d3.select(self.frameElement).style("height", height + "px");
+
+</script>
