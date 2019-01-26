@@ -6,7 +6,7 @@
   fill: #222;
 }
 
-.municipalities :hover {
+path:hover {
   fill: orange;
 }
 
@@ -29,7 +29,7 @@
   <script src="https://d3js.org/d3.v3.min.js"></script>
   <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script>
-
+// python -m http.server
 var width = 960*4,
     height = 628*4;
 
@@ -49,36 +49,54 @@ var svg = d3.select("body").append("svg")
 
 d3.json("/mexico.json", function(error, mx) {
   if (error) throw error;
+/*
+svg.append("g")
+      .attr("class", "state-boundary")
+      .attr("id", 13)
+    .selectAll("path")
+      .data(topojson.feature(mx, mx.objects.municipalities.geometries.filter(a => a.properties.state === 13)))
+      .enter()
+      .append("path").attr("d", path);*/
 
+const allFeatures = d3.nest()
+  .key( d => d.properties.state)
+  .entries(topojson.feature(mx, mx.objects.municipalities).features);
+
+//console.log(allFeatures)
+
+svg.selectAll("g")
+  .data(allFeatures)
+  .enter()
+  .append("g")
+  .attr("id", d =>{ console.log(d); return d.key })
+    .selectAll("path")
+    .data(d => d.values)
+    .enter()
+      .append("path")
+      .attr("id", d => d.properties.name.replace(/ /g, "_")
+        .replace(/á/g, "a")
+        .replace(/é/g, "e")
+        .replace(/í/g, "i")
+        .replace(/ó/g, "o")
+        .replace(/ú/g, "u")
+        .replace(/Á/g, "a")
+        .replace(/É/g, "e")
+        .replace(/Í/g, "i")
+        .replace(/Ó/g, "o")
+        .replace(/Ú/g, "u"))
+      .attr("d", path);
 /*
   svg.append("g")
       .attr("class", "municipalities")
     .selectAll("path")
       .data(topojson.feature(mx, mx.objects.municipalities).features)
-    .enter().append("path")
-      .attr("d", path)
-    .append("title")
-      .text(function(d) { return d.properties.name; });*/
-
-  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
-  .forEach(i => svg.append("g")
-      .attr("class", "state-boundary")
-      .attr("id", i)
-    .append("path")
-      .datum(topojson.merge(mx, mx.objects.municipalities.geometries.filter(a => a.properties.state === i)))
-      .attr("d", path));
-
-  
-/*
-      svg.append("path")
-      .datum(topojson.mesh(mx, mx.objects.municipalities, function(a, b) { return a.properties.state !== b.properties.state; }))
-      .attr("class", "state-boundary")
+    .enter()
+      .append("g")
+      .attr("id", d => d.properties.name.replace(/ /g, "_"))
+      .attr("data-state", d => d.properties.state )
+      .append("path")
       .attr("d", path);
-
-  svg.append("path")
-      .datum(topojson.mesh(mx, mx.objects.municipalities, function(a, b) { return a.properties.state === b.properties.state && a !== b; }))
-      .attr("class", "municipality-boundary")
-      .attr("d", path);*/
+      */
 });
 
 d3.select(self.frameElement).style("height", height + "px");
